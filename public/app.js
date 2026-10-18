@@ -1,6 +1,6 @@
-import { assemble, paragraphParts } from "/src/assemble.js";
-import { validateChecklist } from "/src/validate.js";
-import { createReportBlob } from "/src/word.js";
+import { assemble, paragraphParts } from "./src/assemble.js";
+import { validateChecklist } from "./src/validate.js";
+import { createReportBlob } from "./src/word.js";
 
 const studySelect = document.getElementById("study");
 const tvsRow = document.getElementById("tvs-row");

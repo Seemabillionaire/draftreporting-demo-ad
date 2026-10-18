@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import zlib from "node:zlib";
-import { assemble } from "../src/assemble.js";
-import { createReportBlob, reportToWordModel } from "../src/word.js";
+import { assemble } from "../public/src/assemble.js";
+import { createReportBlob, reportToWordModel } from "../public/src/word.js";
 import { loadLibrary, checklist } from "./helpers.js";
 
 function extractZipEntry(buffer, wanted) {

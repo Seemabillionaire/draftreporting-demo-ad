@@ -16,12 +16,12 @@ const STATIC = new Map([
   ["/login.js", ["public/login.js", "text/javascript; charset=utf-8"]],
   ["/styles.css", ["public/styles.css", "text/css; charset=utf-8"]],
   ["/app.js", ["public/app.js", "text/javascript; charset=utf-8"]],
-  ["/src/assemble.js", ["src/assemble.js", "text/javascript; charset=utf-8"]],
-  ["/src/validate.js", ["src/validate.js", "text/javascript; charset=utf-8"]],
-  ["/src/word.js", ["src/word.js", "text/javascript; charset=utf-8"]],
+  ["/src/assemble.js", ["public/src/assemble.js", "text/javascript; charset=utf-8"]],
+  ["/src/validate.js", ["public/src/validate.js", "text/javascript; charset=utf-8"]],
+  ["/src/word.js", ["public/src/word.js", "text/javascript; charset=utf-8"]],
   [
     "/vendor/docx-9.8.1/index.mjs",
-    ["vendor/docx-9.8.1/index.mjs", "text/javascript; charset=utf-8"]
+    ["public/vendor/docx-9.8.1/index.mjs", "text/javascript; charset=utf-8"]
   ]
 ]);
 const API = new Map([

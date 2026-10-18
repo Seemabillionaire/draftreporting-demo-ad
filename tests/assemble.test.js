@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assemble, reportToText, BLANK } from "../src/assemble.js";
-import { validateChecklist, validateReport } from "../src/validate.js";
+import { assemble, reportToText, BLANK } from "../public/src/assemble.js";
+import { validateChecklist, validateReport } from "../public/src/validate.js";
 import { loadLibrary, conflictLibrary, checklist, paragraph, segment } from "./helpers.js";
 
 function assertValid(library, plan, report) {
