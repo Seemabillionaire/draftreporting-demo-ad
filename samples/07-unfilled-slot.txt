@@ -1,0 +1,15 @@
+TEST HEADING ABDOMEN
+
+TEST ORGAN A TEST: - TEST normal sentence A1. TEST normal sentence A2 measuring …… cm.
+
+TEST ORGAN B TEST: - TEST finding with no impression, word …….
+
+TEST PAIRED ORGAN TEST: - TEST both sides normal sentence.
+
+TEST unlabelled normal sentence D1.
+
+TEST IMPRESSION: - ……
+
+TEST SIGNATURE LINE ONE
+TEST SIGNATURE LINE TWO
+TEST SIGNATURE LINE THREE

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1.0",
+  "study": "neck",
+  "headings": {
+    "default": "TEST HEADING NECK"
+  },
+  "variants": [
+    { "id": "default", "when": {} }
+  ],
+  "impressionLabel": "TEST IMPRESSION: - ",
+  "normalImpression": "TEST neck normal impression when no finding is chosen.",
+  "signature": [
+    "TEST SIGNATURE LINE ONE",
+    "TEST SIGNATURE LINE TWO",
+    "TEST SIGNATURE LINE THREE"
+  ],
+  "paragraphs": [
+    {
+      "id": "p_neck_a",
+      "label": "",
+      "separator": "TEST: - ",
+      "variants": ["default"],
+      "segments": [
+        { "id": "na1", "text": "TEST neck unlabelled normal sentence A1." },
+        { "id": "na2", "text": "TEST neck unlabelled normal sentence A2 measuring {slot:na_len} cm." }
+      ]
+    },
+    {
+      "id": "p_neck_b",
+      "label": "",
+      "separator": "TEST: - ",
+      "variants": ["default"],
+      "segments": [
+        { "id": "nb1", "text": "TEST neck unlabelled normal sentence B1." }
+      ]
+    }
+  ],
+  "slots": [
+    { "id": "na_len", "type": "number", "unit": "TEST cm" }
+  ],
+  "findings": [
+    {
+      "id": "nf_one",
+      "name": "TEST NECK FINDING ONE",
+      "spoken": ["TEST NECK FINDING ONE"],
+      "paragraph": "p_neck_a",
+      "side": false,
+      "replaces": ["na2"],
+      "insertAfter": null,
+      "text": "TEST neck finding one replaces A2.",
+      "impression": "TEST neck impression one.",
+      "advLine": null,
+      "status": "for_confirmation",
+      "source": "TEST NECK SOURCE ONE"
+    },
+    {
+      "id": "nf_two",
+      "name": "TEST NECK FINDING TWO",
+      "spoken": ["TEST NECK FINDING TWO"],
+      "paragraph": "p_neck_b",
+      "side": false,
+      "replaces": ["nb1"],
+      "insertAfter": null,
+      "text": "TEST neck finding two replaces B1.",
+      "impression": null,
+      "advLine": "TEST Adv: neck line one.",
+      "status": "for_confirmation",
+      "source": "TEST NECK SOURCE TWO"
+    }
+  ],
+  "combinedImpressions": [],
+  "advLines": [
+    "TEST Adv: neck line one."
+  ]
+}

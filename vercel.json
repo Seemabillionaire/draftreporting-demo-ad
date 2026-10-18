@@ -1,0 +1,8 @@
+{
+  "regions": ["bom1"],
+  "functions": {
+    "api/library.js": {
+      "includeFiles": "library/**"
+    }
+  }
+}

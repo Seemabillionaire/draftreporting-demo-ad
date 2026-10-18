@@ -1,0 +1,17 @@
+TEST HEADING ABDOMEN
+
+TEST ORGAN A TEST: - TEST normal sentence A1. TEST normal sentence A2 measuring …… cm.
+
+TEST ORGAN B TEST: - TEST normal sentence B1 with option …….
+
+TEST RIGHT SIDE TEST: - TEST side finding replaces the right side sentence.
+
+TEST LEFT SIDE TEST: - TEST left side normal sentence.
+
+TEST unlabelled normal sentence D1.
+
+TEST IMPRESSION: - TEST impression side finding.
+
+TEST SIGNATURE LINE ONE
+TEST SIGNATURE LINE TWO
+TEST SIGNATURE LINE THREE

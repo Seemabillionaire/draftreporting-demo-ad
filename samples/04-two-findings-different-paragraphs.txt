@@ -1,0 +1,17 @@
+TEST HEADING ABDOMEN
+
+TEST ORGAN A TEST: - TEST normal sentence A1. TEST finding A-one replaces A2.
+
+TEST ORGAN B TEST: - TEST normal sentence B1 with option …….
+
+TEST PAIRED ORGAN TEST: - TEST both sides normal sentence.
+
+TEST finding marked for confirmation.
+
+TEST IMPRESSION: - 
+- TEST impression A-one.
+- TEST impression for confirmation.
+
+TEST SIGNATURE LINE ONE
+TEST SIGNATURE LINE TWO
+TEST SIGNATURE LINE THREE

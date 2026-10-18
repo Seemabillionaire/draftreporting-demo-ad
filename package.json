@@ -1,0 +1,11 @@
+{
+  "name": "report-drafting-demo",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

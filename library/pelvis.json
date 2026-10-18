@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0",
+  "study": "pelvis",
+  "headings": {
+    "default": "TEST HEADING PELVIS WITHOUT TEST TVS",
+    "tvs": "TEST HEADING PELVIS WITH TEST TVS"
+  },
+  "variants": [
+    { "id": "tvs", "when": { "tvs": true } },
+    { "id": "default", "when": {} }
+  ],
+  "impressionLabel": "TEST IMPRESSION: - ",
+  "normalImpression": "TEST pelvis normal impression when no finding is chosen.",
+  "signature": [
+    "TEST SIGNATURE LINE ONE",
+    "TEST SIGNATURE LINE TWO",
+    "TEST SIGNATURE LINE THREE"
+  ],
+  "paragraphs": [
+    {
+      "id": "p_pelvis_a",
+      "label": "TEST PELVIS ORGAN A",
+      "separator": "TEST: - ",
+      "variants": ["default", "tvs"],
+      "segments": [
+        { "id": "pa1", "text": "TEST pelvis normal sentence A1." },
+        { "id": "pa2", "text": "TEST pelvis normal sentence A2 measuring {slot:pa_len} cm." }
+      ]
+    },
+    {
+      "id": "p_pelvis_b",
+      "label": "TEST PELVIS ORGAN B",
+      "separator": "TEST: - ",
+      "variants": ["default", "tvs"],
+      "segments": [
+        { "id": "pb1", "text": "TEST pelvis normal sentence B1 with option {slot:pb_choice}." }
+      ]
+    }
+  ],
+  "slots": [
+    { "id": "pa_len", "type": "number", "unit": "TEST cm" },
+    { "id": "pb_choice", "type": "choice", "options": ["TEST PELVIS OPTION ONE", "TEST PELVIS OPTION TWO"] }
+  ],
+  "findings": [
+    {
+      "id": "pf_one",
+      "name": "TEST PELVIS FINDING ONE",
+      "spoken": ["TEST PELVIS FINDING ONE"],
+      "paragraph": "p_pelvis_a",
+      "side": false,
+      "replaces": ["pa2"],
+      "insertAfter": null,
+      "text": "TEST pelvis finding one replaces A2.",
+      "impression": "TEST pelvis impression one.",
+      "advLine": null,
+      "status": "for_confirmation",
+      "source": "TEST PELVIS SOURCE ONE"
+    },
+    {
+      "id": "pf_two",
+      "name": "TEST PELVIS FINDING TWO",
+      "spoken": ["TEST PELVIS FINDING TWO"],
+      "paragraph": "p_pelvis_b",
+      "side": false,
+      "replaces": ["pb1"],
+      "insertAfter": null,
+      "text": "TEST pelvis finding two replaces B1.",
+      "impression": "TEST pelvis impression two.",
+      "advLine": "TEST Adv: pelvis line one.",
+      "status": "for_confirmation",
+      "source": "TEST PELVIS SOURCE TWO"
+    },
+    {
+      "id": "pf_three",
+      "name": "TEST PELVIS FINDING THREE",
+      "spoken": ["TEST PELVIS FINDING THREE"],
+      "paragraph": "p_pelvis_a",
+      "side": false,
+      "replaces": [],
+      "insertAfter": "pa1",
+      "text": "TEST pelvis finding three inserted after A1.",
+      "impression": null,
+      "advLine": null,
+      "status": "for_confirmation",
+      "source": "TEST PELVIS SOURCE THREE"
+    }
+  ],
+  "combinedImpressions": [],
+  "advLines": [
+    "TEST Adv: pelvis line one.",
+    "TEST Adv: pelvis line two."
+  ]
+}

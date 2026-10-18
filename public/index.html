@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Report Drafting Assistant</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div id="placeholder-banner" class="placeholder-banner" hidden>PLACEHOLDER LIBRARY</div>
+    <header class="page-header">
+      <h1>Report Drafting Assistant</h1>
+      <button type="button" id="signout" class="signout" hidden>Sign out</button>
+    </header>
+    <div id="startup-error" class="startup-error" role="alert" hidden></div>
+    <main id="app-shell" class="layout" hidden>
+      <section class="controls" aria-label="Report choices">
+        <label class="field">
+          <span>Study</span>
+          <select id="study">
+            <option value="abdomen">Abdomen</option>
+            <option value="pelvis">Pelvis</option>
+            <option value="neck">Neck</option>
+          </select>
+        </label>
+
+        <label class="check" id="tvs-row">
+          <input type="checkbox" id="tvs">
+          <span>With TVS</span>
+        </label>
+
+        <fieldset>
+          <legend>Patient details</legend>
+          <label class="field">
+            <span>Name</span>
+            <input type="text" id="header-name" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Age</span>
+            <input type="text" id="header-age" inputmode="numeric" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Sex</span>
+            <select id="sex">
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Date</span>
+            <input type="text" id="header-date" inputmode="numeric" autocomplete="off" placeholder="DD/MM/YYYY">
+          </label>
+          <label class="field">
+            <span>Patient ID</span>
+            <input type="text" id="header-patient-id" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Referred by</span>
+            <input type="text" id="header-referred-by" autocomplete="off">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Findings</legend>
+          <div id="findings" class="finding-list"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Measurements and choices</legend>
+          <div id="slots" class="slot-list"></div>
+        </fieldset>
+
+        <div class="actions">
+          <button type="button" id="final" disabled>Final</button>
+          <button type="button" id="download" disabled>Download Word</button>
+          <button type="button" id="copy" disabled>Copy</button>
+        </div>
+        <p id="status" class="status" role="status"></p>
+        <div id="errors" class="errors" hidden></div>
+      </section>
+
+      <section class="preview" aria-label="Report preview">
+        <div id="report" class="report"></div>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

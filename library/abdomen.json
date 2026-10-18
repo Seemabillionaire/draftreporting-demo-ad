@@ -1,0 +1,169 @@
+{
+  "schemaVersion": "1.0",
+  "study": "abdomen",
+  "headings": {
+    "default": "TEST HEADING ABDOMEN"
+  },
+  "variants": [
+    { "id": "male", "when": { "sex": "M" } },
+    { "id": "female", "when": { "sex": "F" } }
+  ],
+  "impressionLabel": "TEST IMPRESSION: - ",
+  "normalImpression": "TEST normal impression when no finding is chosen.",
+  "signature": [
+    "TEST SIGNATURE LINE ONE",
+    "TEST SIGNATURE LINE TWO",
+    "TEST SIGNATURE LINE THREE"
+  ],
+  "paragraphs": [
+    {
+      "id": "p_organ_a",
+      "label": "TEST ORGAN A",
+      "separator": "TEST: - ",
+      "variants": ["male", "female"],
+      "segments": [
+        { "id": "a1", "text": "TEST normal sentence A1." },
+        { "id": "a2", "text": "TEST normal sentence A2 measuring {slot:a_len} cm." }
+      ]
+    },
+    {
+      "id": "p_organ_b",
+      "label": "TEST ORGAN B",
+      "separator": "TEST: - ",
+      "variants": ["male", "female"],
+      "segments": [
+        { "id": "b1", "text": "TEST normal sentence B1 with option {slot:b_choice}." }
+      ]
+    },
+    {
+      "id": "p_paired",
+      "label": "TEST PAIRED ORGAN",
+      "separator": "TEST: - ",
+      "variants": ["male", "female"],
+      "segments": [
+        { "id": "p_both", "text": "TEST both sides normal sentence." }
+      ],
+      "sideSplit": {
+        "right": {
+          "label": "TEST RIGHT SIDE",
+          "separator": "TEST: - ",
+          "segments": [
+            { "id": "p_r1", "text": "TEST right side normal sentence." }
+          ]
+        },
+        "left": {
+          "label": "TEST LEFT SIDE",
+          "separator": "TEST: - ",
+          "segments": [
+            { "id": "p_l1", "text": "TEST left side normal sentence." }
+          ]
+        }
+      }
+    },
+    {
+      "id": "p_female_only",
+      "label": "TEST ORGAN C",
+      "separator": "TEST: - ",
+      "variants": ["female"],
+      "segments": [
+        { "id": "c1", "text": "TEST normal sentence C1." }
+      ]
+    },
+    {
+      "id": "p_no_label",
+      "label": "",
+      "separator": "TEST: - ",
+      "variants": ["male", "female"],
+      "segments": [
+        { "id": "d1", "text": "TEST unlabelled normal sentence D1." }
+      ]
+    }
+  ],
+  "slots": [
+    { "id": "a_len", "type": "number", "unit": "TEST cm" },
+    { "id": "b_choice", "type": "choice", "options": ["TEST OPTION ONE", "TEST OPTION TWO"] },
+    { "id": "f_word", "type": "word" }
+  ],
+  "findings": [
+    {
+      "id": "f_a_one",
+      "name": "TEST FINDING A-ONE",
+      "spoken": ["TEST FINDING A-ONE", "TEST SPEAK A ONE"],
+      "paragraph": "p_organ_a",
+      "side": false,
+      "replaces": ["a2"],
+      "insertAfter": null,
+      "text": "TEST finding A-one replaces A2.",
+      "impression": "TEST impression A-one.",
+      "advLine": null,
+      "status": "confirmed",
+      "source": "TEST SOURCE A-ONE"
+    },
+    {
+      "id": "f_a_two",
+      "name": "TEST FINDING A-TWO",
+      "spoken": ["TEST FINDING A-TWO"],
+      "paragraph": "p_organ_a",
+      "side": false,
+      "replaces": [],
+      "insertAfter": "a1",
+      "text": "TEST finding A-two inserted after A1.",
+      "impression": "TEST impression A-two.",
+      "advLine": null,
+      "status": "confirmed",
+      "source": "TEST SOURCE A-TWO"
+    },
+    {
+      "id": "f_no_impression",
+      "name": "TEST FINDING NO IMPRESSION",
+      "spoken": ["TEST FINDING NO IMPRESSION"],
+      "paragraph": "p_organ_b",
+      "side": false,
+      "replaces": ["b1"],
+      "insertAfter": null,
+      "text": "TEST finding with no impression, word {slot:f_word}.",
+      "impression": null,
+      "advLine": null,
+      "status": "confirmed",
+      "source": "TEST SOURCE NO IMPRESSION"
+    },
+    {
+      "id": "f_side",
+      "name": "TEST FINDING SIDE",
+      "spoken": ["TEST FINDING SIDE"],
+      "paragraph": "p_paired",
+      "side": true,
+      "replaces": ["p_r1"],
+      "insertAfter": null,
+      "text": "TEST side finding replaces the right side sentence.",
+      "impression": "TEST impression side finding.",
+      "advLine": null,
+      "status": "confirmed",
+      "source": "TEST SOURCE SIDE"
+    },
+    {
+      "id": "f_confirm",
+      "name": "TEST FINDING FOR CONFIRMATION",
+      "spoken": ["TEST FINDING FOR CONFIRMATION"],
+      "paragraph": "p_no_label",
+      "side": false,
+      "replaces": ["d1"],
+      "insertAfter": null,
+      "text": "TEST finding marked for confirmation.",
+      "impression": "TEST impression for confirmation.",
+      "advLine": "TEST Adv: line one.",
+      "status": "for_confirmation",
+      "source": "TEST SOURCE CONFIRMATION"
+    }
+  ],
+  "combinedImpressions": [
+    {
+      "findings": ["f_a_one", "f_a_two"],
+      "text": "TEST combined impression for A-one and A-two."
+    }
+  ],
+  "advLines": [
+    "TEST Adv: line one.",
+    "TEST Adv: line two."
+  ]
+}
