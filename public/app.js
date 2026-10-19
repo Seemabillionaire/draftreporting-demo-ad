@@ -1,6 +1,7 @@
 import { assemble, paragraphParts } from "./src/assemble.js";
 import { validateChecklist } from "./src/validate.js";
 import { createReportBlob } from "./src/word.js";
+import { initMicrophone } from "./mic.js";
 
 const studySelect = document.getElementById("study");
 const tvsRow = document.getElementById("tvs-row");
@@ -512,6 +513,7 @@ async function start() {
     }
     appShell.hidden = false;
     signoutButton.hidden = false;
+    initMicrophone();
     await loadStudy("abdomen");
   } catch (error) {
     showStartupError("The server could not be reached.");

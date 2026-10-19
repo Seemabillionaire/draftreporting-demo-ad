@@ -14,6 +14,31 @@
     </header>
     <div id="startup-error" class="startup-error" role="alert" hidden></div>
     <main id="app-shell" class="layout" hidden>
+      <section id="mic-panel" class="mic-panel" aria-labelledby="mic-title">
+        <h2 id="mic-title">Microphone</h2>
+        <p class="mic-intro">The recording stays in this browser tab. It is not uploaded or saved.</p>
+        <div class="mic-row">
+          <label class="mic-field">
+            <span>Microphone</span>
+            <select id="mic-select" disabled>
+              <option value="">Choose a microphone</option>
+            </select>
+          </label>
+          <p id="mic-using" class="mic-using">Using: no microphone chosen</p>
+        </div>
+        <div id="mic-meter" class="mic-meter" role="meter" aria-label="Microphone level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="mic-meter-fill" class="mic-meter-fill"></div>
+        </div>
+        <div class="mic-actions">
+          <button type="button" id="mic-button" class="mic-button" disabled>Start recording</button>
+          <button type="button" id="mic-again" class="mic-again" hidden>Record again</button>
+        </div>
+        <p id="mic-status" class="mic-status" role="status">Waiting for the microphone list.</p>
+        <p id="mic-warning" class="mic-warning" role="alert" hidden></p>
+        <p id="mic-error" class="mic-error" role="alert" hidden></p>
+        <audio id="mic-playback" class="mic-playback" controls hidden></audio>
+        <p class="mic-limit">Maximum recording length: 10 minutes.</p>
+      </section>
       <section class="controls" aria-label="Report choices">
         <label class="field">
           <span>Study</span>

@@ -14,6 +14,7 @@ const STATIC = new Map([
   ["/index.html", ["public/index.html", "text/html; charset=utf-8"]],
   ["/login.html", ["public/login.html", "text/html; charset=utf-8"]],
   ["/login.js", ["public/login.js", "text/javascript; charset=utf-8"]],
+  ["/mic.js", ["public/mic.js", "text/javascript; charset=utf-8"]],
   ["/styles.css", ["public/styles.css", "text/css; charset=utf-8"]],
   ["/app.js", ["public/app.js", "text/javascript; charset=utf-8"]],
   ["/src/assemble.js", ["public/src/assemble.js", "text/javascript; charset=utf-8"]],

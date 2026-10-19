@@ -126,6 +126,142 @@ body {
   padding-right: 4px;
 }
 
+.mic-panel {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / -1;
+  gap: 14px;
+  padding: 22px 24px 24px;
+  border: 1px solid #c9d0d6;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.mic-panel h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.mic-intro {
+  margin: 0;
+  color: #43505a;
+  font-size: 15px;
+}
+
+.mic-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 28px;
+  align-items: flex-end;
+}
+
+.mic-field {
+  display: flex;
+  flex: 1 1 360px;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.mic-field select {
+  padding: 10px 12px;
+  font-size: 18px;
+}
+
+.mic-using {
+  flex: 1 1 280px;
+  margin: 0 0 6px;
+  color: #24313a;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mic-meter {
+  width: 100%;
+  height: 30px;
+  overflow: hidden;
+  border: 1px solid #b8c2cb;
+  border-radius: 999px;
+  background: #e9edf1;
+}
+
+.mic-meter-fill {
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: #2da44e;
+  transition: width 80ms linear;
+}
+
+.mic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.mic-button {
+  min-width: 220px;
+  padding: 14px 34px;
+  border-color: #1a7f37;
+  background: #1a7f37;
+  font-size: 20px;
+}
+
+.mic-button.recording {
+  border-color: #cf222e;
+  background: #cf222e;
+}
+
+.mic-again {
+  padding: 11px 22px;
+  border-color: #1f5fae;
+  background: #ffffff;
+  color: #1f5fae;
+  font-size: 17px;
+}
+
+.mic-status {
+  min-height: 24px;
+  margin: 0;
+  color: #24313a;
+  font-size: 17px;
+}
+
+.mic-warning,
+.mic-error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.mic-warning {
+  border: 1px solid #d4a72c;
+  background: #fff8c5;
+  color: #7d4e00;
+}
+
+.mic-error {
+  border: 1px solid #b00020;
+  border-radius: 6px;
+  background: #fff1f3;
+  color: #8b0018;
+}
+
+.mic-playback {
+  width: 100%;
+  max-width: 560px;
+  height: 52px;
+}
+
+.mic-limit {
+  margin: 0;
+  color: #6e7781;
+  font-size: 13px;
+}
+
 fieldset {
   margin: 0;
   padding: 12px 14px 16px;
