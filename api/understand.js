@@ -96,13 +96,17 @@ export default async function handler(request, response) {
       }
       if (result.reason === "timeout") {
         reply(504, {
-          error: result.message || "Gemini timed out after 6 seconds.",
+          error: result.message || "Gemini did not respond within 12 seconds.",
           listMode: true
         });
         return;
       }
       if (result.reason === "gemini") {
-        reply(502, {
+        const status =
+          Number.isInteger(result.status) && result.status >= 400 && result.status <= 599
+            ? result.status
+            : 502;
+        reply(status, {
           error: result.message || "Gemini returned an error. Use the list below.",
           listMode: true
         });
