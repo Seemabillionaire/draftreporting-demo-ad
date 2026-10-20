@@ -3,6 +3,10 @@
   "functions": {
     "api/library.js": {
       "includeFiles": "library/**"
+    },
+    "api/transcribe.js": {
+      "includeFiles": "library/**",
+      "maxDuration": 130
     }
   }
 }

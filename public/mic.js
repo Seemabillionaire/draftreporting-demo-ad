@@ -12,11 +12,14 @@ const status = document.getElementById("mic-status");
 const warning = document.getElementById("mic-warning");
 const error = document.getElementById("mic-error");
 const playback = document.getElementById("mic-playback");
+const transcriptBox = document.getElementById("transcript-box");
+const transcriptInput = document.getElementById("transcript");
 
 let initialized = false;
 let recording = false;
 let starting = false;
 let stopping = false;
+let transcribing = false;
 let permissionBlocked = false;
 let stream = null;
 let audioContext = null;
@@ -71,7 +74,7 @@ function updateButtonState() {
     button.disabled = false;
     return;
   }
-  button.disabled = select.value === "" || permissionBlocked || starting || deviceCount === 0;
+  button.disabled = select.value === "" || permissionBlocked || starting || transcribing || deviceCount === 0;
 }
 
 function listAudioInputs() {
@@ -253,6 +256,65 @@ function resetMeter() {
   meter.setAttribute("aria-valuenow", "0");
 }
 
+async function transcribeRecording(blob) {
+  if (transcribing) return;
+  if (blob.size > 4300000) {
+    showError(
+      "The recording is too large to send. Use the list below. Nothing in the list has been lost."
+    );
+    return;
+  }
+
+  transcribing = true;
+  againButton.disabled = true;
+  updateButtonState();
+  setStatus("Transcribing the recording...");
+
+  try {
+    const response = await fetch("/api/transcribe", {
+      method: "POST",
+      headers: { "Content-Type": blob.type || "audio/webm" },
+      body: blob,
+      signal: AbortSignal.timeout(140000)
+    });
+    let data = {};
+    try {
+      data = await response.json();
+    } catch (error) {
+      data = {};
+    }
+    if (!response.ok) {
+      const message =
+        typeof data.error === "string"
+          ? data.error.trim().replace(/[.\s]+$/, "")
+          : "Speech to text failed. Use the list below";
+      showError(message + ". Nothing in the list has been lost.");
+      return;
+    }
+    const text = typeof data.transcript === "string" ? data.transcript.trim() : "";
+    if (text === "") {
+      showError(
+        "No words were recognized. Use the list below. Nothing in the list has been lost."
+      );
+      return;
+    }
+    transcriptInput.value = text;
+    transcriptBox.hidden = false;
+    clearError();
+    setStatus("Transcript ready. You can edit it below.");
+  } catch (error) {
+    const message =
+      error && error.name === "TimeoutError"
+        ? "Transcription timed out. Use the list below."
+        : "The transcription service could not be reached. Use the list below.";
+    showError(message + " Nothing in the list has been lost.");
+  } finally {
+    transcribing = false;
+    againButton.disabled = false;
+    updateButtonState();
+  }
+}
+
 function finalizeRecording() {
   recording = false;
   starting = false;
@@ -317,6 +379,10 @@ function finalizeRecording() {
     } else {
       setStatus("Nothing was recorded.");
     }
+  }
+
+  if (blob !== null && blob.size > 0) {
+    transcribeRecording(blob);
   }
 
   stopReason = "";
@@ -388,7 +454,7 @@ function handleStartError(mediaError) {
 }
 
 async function startRecording() {
-  if (recording || starting) return;
+  if (recording || starting || transcribing) return;
   clearError();
   clearWarning();
   silenceShown = false;
@@ -437,9 +503,10 @@ async function startRecording() {
     source = audioContext.createMediaStreamSource(stream);
     source.connect(analyser);
 
-    const options = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-      ? { mimeType: "audio/webm;codecs=opus" }
-      : undefined;
+    const options = { audioBitsPerSecond: 32000 };
+    if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+      options.mimeType = "audio/webm;codecs=opus";
+    }
     recorder = new MediaRecorder(stream, options);
     chunks = [];
     stopReason = "";

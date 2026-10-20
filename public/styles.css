@@ -255,6 +255,26 @@ body {
   max-width: 560px;
   height: 52px;
 }
+.transcript-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.transcript-box label {
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.transcript-box textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 12px 14px;
+  border: 1px solid #aeb7bf;
+  border-radius: 6px;
+  font: 16px/1.45 "Segoe UI", Arial, sans-serif;
+  resize: vertical;
+}
 
 .mic-limit {
   margin: 0;

@@ -16,7 +16,7 @@
     <main id="app-shell" class="layout" hidden>
       <section id="mic-panel" class="mic-panel" aria-labelledby="mic-title">
         <h2 id="mic-title">Microphone</h2>
-        <p class="mic-intro">The recording stays in this browser tab. It is not uploaded or saved.</p>
+        <p class="mic-intro">The recording stays in this browser tab. It is sent only for transcription and is not stored or logged.</p>
         <div class="mic-row">
           <label class="mic-field">
             <span>Microphone</span>
@@ -37,6 +37,10 @@
         <p id="mic-warning" class="mic-warning" role="alert" hidden></p>
         <p id="mic-error" class="mic-error" role="alert" hidden></p>
         <audio id="mic-playback" class="mic-playback" controls hidden></audio>
+        <div id="transcript-box" class="transcript-box" hidden>
+          <label for="transcript">Transcript (editable)</label>
+          <textarea id="transcript" rows="6" spellcheck="false"></textarea>
+        </div>
         <p class="mic-limit">Maximum recording length: 10 minutes.</p>
       </section>
       <section class="controls" aria-label="Report choices">

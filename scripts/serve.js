@@ -5,6 +5,7 @@ import login from "../api/login.js";
 import logout from "../api/logout.js";
 import session from "../api/session.js";
 import library from "../api/library.js";
+import transcribe from "../api/transcribe.js";
 import { getConfig, PASSCODE_ENV, SECRET_ENV, sendJson } from "../lib/auth.js";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -29,7 +30,8 @@ const API = new Map([
   ["/api/login", login],
   ["/api/logout", logout],
   ["/api/session", session],
-  ["/api/library", library]
+  ["/api/library", library],
+  ["/api/transcribe", transcribe]
 ]);
 
 function send(response, status, contentType, body) {
