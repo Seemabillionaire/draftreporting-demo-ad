@@ -556,7 +556,7 @@ async function runAi(transcript, study = null) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(20000)
+      signal: AbortSignal.timeout(12000)
     });
     let data = {};
     try {

@@ -95,7 +95,17 @@ export default async function handler(request, response) {
         return;
       }
       if (result.reason === "timeout") {
-        reply(504, { error: "AI did not answer in time. Use the list below.", listMode: true });
+        reply(504, {
+          error: result.message || "Gemini timed out after 6 seconds.",
+          listMode: true
+        });
+        return;
+      }
+      if (result.reason === "gemini") {
+        reply(502, {
+          error: result.message || "Gemini returned an error. Use the list below.",
+          listMode: true
+        });
         return;
       }
       reply(502, { error: "AI could not understand the dictation. Use the list below.", listMode: true });
