@@ -41,6 +41,19 @@
           <label for="transcript">Transcript (editable)</label>
           <textarea id="transcript" rows="6" spellcheck="false"></textarea>
         </div>
+        <div id="study-question" class="study-question" hidden>
+          <p>Which study is this?</p>
+          <div class="study-question-actions">
+            <button type="button" data-study="abdomen">Abdomen</button>
+            <button type="button" data-study="pelvis">Pelvis</button>
+            <button type="button" data-study="neck">Neck</button>
+          </div>
+        </div>
+        <div id="ai-review" class="ai-review" hidden>
+          <strong>Not used from the dictation</strong>
+          <ul id="ai-review-list"></ul>
+        </div>
+        <p id="ai-error" class="ai-error" role="alert" hidden></p>
         <p class="mic-limit">Maximum recording length: 10 minutes.</p>
       </section>
       <section class="controls" aria-label="Report choices">

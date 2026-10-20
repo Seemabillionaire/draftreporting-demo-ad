@@ -35,6 +35,7 @@ let silenceShown = false;
 let playbackUrl = null;
 let stopReason = "";
 let deviceCount = 0;
+let onTranscript = null;
 
 function setStatus(message) {
   status.textContent = message;
@@ -256,6 +257,16 @@ function resetMeter() {
   meter.setAttribute("aria-valuenow", "0");
 }
 
+function stripClosingPhrases(text) {
+  return text
+    .replace(
+      /\bplease\s+(?:give\s+report|make\s+(?:a\s+)?report|draft\s+report)\b[\s.,!?]*/gi,
+      " "
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 async function transcribeRecording(blob) {
   if (transcribing) return;
   if (blob.size > 4300000) {
@@ -292,16 +303,24 @@ async function transcribeRecording(blob) {
       return;
     }
     const text = typeof data.transcript === "string" ? data.transcript.trim() : "";
-    if (text === "") {
+    const cleaned = stripClosingPhrases(text);
+    if (cleaned === "") {
       showError(
-        "No words were recognized. Use the list below. Nothing in the list has been lost."
+        "No dictation was found after the closing phrase. Use the list below. Nothing in the list has been lost."
       );
       return;
     }
-    transcriptInput.value = text;
+    transcriptInput.value = cleaned;
     transcriptBox.hidden = false;
     clearError();
     setStatus("Transcript ready. You can edit it below.");
+    if (typeof onTranscript === "function") {
+      try {
+        await onTranscript(cleaned);
+      } catch (error) {
+        showError("The report could not be drafted. Use the list below.");
+      }
+    }
   } catch (error) {
     const message =
       error && error.name === "TimeoutError"
@@ -549,9 +568,10 @@ function chooseDevice() {
   updateButtonState();
 }
 
-export async function initMicrophone() {
+export async function initMicrophone(transcriptHandler) {
   if (initialized) return;
   initialized = true;
+  onTranscript = typeof transcriptHandler === "function" ? transcriptHandler : null;
 
   button.addEventListener("click", () => {
     if (recording) stopRecording("user");

@@ -24,6 +24,10 @@ const errorsEl = document.getElementById("errors");
 const appShell = document.getElementById("app-shell");
 const startupError = document.getElementById("startup-error");
 const signoutButton = document.getElementById("signout");
+const studyQuestion = document.getElementById("study-question");
+const aiReview = document.getElementById("ai-review");
+const aiReviewList = document.getElementById("ai-review-list");
+const aiError = document.getElementById("ai-error");
 
 let library = null;
 let reportBodyEl = null;
@@ -31,6 +35,8 @@ let currentReport = null;
 let hasReport = false;
 let isFinal = false;
 let loadToken = 0;
+let aiTranscript = "";
+let aiBusy = false;
 
 function todayText() {
   const now = new Date();
@@ -424,6 +430,191 @@ function snapshotWordModel() {
   };
 }
 
+function setMicStatus(message) {
+  const element = document.getElementById("mic-status");
+  if (element) element.textContent = message;
+}
+
+function clearAiMessages() {
+  aiError.textContent = "";
+  aiError.hidden = true;
+  aiReviewList.replaceChildren();
+  aiReview.hidden = true;
+  studyQuestion.hidden = true;
+}
+
+function showAiError(message) {
+  aiError.textContent = message;
+  aiError.hidden = false;
+}
+
+function showAiReview(errors) {
+  const items = errors.map((message) => {
+    const item = document.createElement("li");
+    item.textContent = message;
+    return item;
+  });
+  aiReviewList.replaceChildren(...items);
+  aiReview.hidden = false;
+}
+
+async function applyAiChecklist(plan) {
+  if (
+    !plan ||
+    typeof plan.study !== "string" ||
+    !["abdomen", "pelvis", "neck"].includes(plan.study)
+  ) {
+    showAiError("The AI returned an unknown study. Use the list below.");
+    return;
+  }
+
+  studySelect.value = plan.study;
+  if (!library || library.study !== plan.study) {
+    await loadStudy(plan.study);
+  }
+  if (!library || library.study !== plan.study) {
+    showAiError("The library could not be loaded. Use the list below.");
+    return;
+  }
+
+  const checklist = {
+    study: plan.study,
+    variant: plan.variant,
+    header: {
+      name: typeof plan.header?.name === "string" ? plan.header.name : "",
+      age: typeof plan.header?.age === "string" ? plan.header.age : "",
+      sex: plan.header?.sex === "F" ? "F" : "M",
+      date: dateInput.value,
+      patientId: "",
+      referredBy: ""
+    },
+    findings: Array.isArray(plan.findings) ? plan.findings : [],
+    slots: plan.slots && typeof plan.slots === "object" ? plan.slots : {},
+    adv: Array.isArray(plan.adv) ? plan.adv : []
+  };
+
+  const errors = validateChecklist(library, checklist);
+  if (errors.length > 0) {
+    showAiReview(errors);
+    setMicStatus("Some dictation items were not used. Use the list below.");
+    return;
+  }
+
+  sexSelect.value = checklist.header.sex;
+  if (plan.study === "pelvis") {
+    sexSelect.value = "F";
+    sexSelect.disabled = true;
+    tvsInput.checked = checklist.variant === "tvs";
+    tvsRow.hidden = false;
+  } else {
+    sexSelect.disabled = false;
+    tvsInput.checked = false;
+    tvsRow.hidden = true;
+  }
+  nameInput.value = checklist.header.name;
+  ageInput.value = checklist.header.age;
+  patientIdInput.value = "";
+  referredByInput.value = "";
+  syncFindings();
+
+  const wantedFindings = new Set(checklist.findings.map((finding) => finding.id));
+  for (const input of findingsEl.querySelectorAll('input[name="finding"]')) {
+    input.checked = wantedFindings.has(input.value);
+  }
+
+  for (const control of slotsEl.querySelectorAll("[data-slot-id]")) {
+    const value = checklist.slots[control.dataset.slotId];
+    control.value = value === undefined || value === null ? "" : String(value);
+  }
+
+  try {
+    renderReport(assemble(library, checklist));
+  } catch (error) {
+    showAiError("The report could not be built. Use the list below.");
+    setMicStatus("The report could not be built.");
+    return;
+  }
+
+  hideErrors();
+  aiError.hidden = true;
+  aiReview.hidden = true;
+  studyQuestion.hidden = true;
+  setMicStatus("Report drafted from the dictation. Review the report on the right.");
+}
+
+async function runAi(transcript, study = null) {
+  if (aiBusy) return;
+  aiBusy = true;
+  aiTranscript = transcript;
+  clearAiMessages();
+  setMicStatus("Understanding the dictation...");
+
+  try {
+    const body = { transcript };
+    if (study !== null) body.study = study;
+    const response = await fetch("/api/understand", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(20000)
+    });
+    let data = {};
+    try {
+      data = await response.json();
+    } catch (error) {
+      data = {};
+    }
+
+    if (response.status === 429) {
+      const message =
+        typeof data.error === "string"
+          ? data.error
+          : "AI limit reached for today: please choose from the list";
+      showAiError(message);
+      setMicStatus(message);
+      return;
+    }
+
+    if (!response.ok) {
+      const message =
+        typeof data.error === "string" && data.error.trim() !== ""
+          ? data.error.trim()
+          : "AI could not understand the dictation. Use the list below.";
+      showAiError(
+        message + (message.endsWith(".") ? "" : ".") + " The transcript is kept above."
+      );
+      setMicStatus("Use the list below.");
+      return;
+    }
+
+    if (data.needsStudy === true) {
+      studyQuestion.hidden = false;
+      setMicStatus("Choose the study below.");
+      return;
+    }
+
+    if (!data.checklist) {
+      showAiError("AI did not return a checklist. Use the list below.");
+      setMicStatus("Use the list below.");
+      return;
+    }
+
+    await applyAiChecklist(data.checklist);
+  } catch (error) {
+    showAiError(
+      "The AI service could not be reached. Use the list below. The transcript is kept above."
+    );
+    setMicStatus("Use the list below.");
+  } finally {
+    aiBusy = false;
+  }
+}
+
+async function handleTranscript(transcript) {
+  aiTranscript = transcript;
+  await runAi(transcript);
+}
+
 function update() {
   if (!library) return;
   setFinal(false);
@@ -513,7 +704,7 @@ async function start() {
     }
     appShell.hidden = false;
     signoutButton.hidden = false;
-    initMicrophone();
+    initMicrophone(handleTranscript);
     await loadStudy("abdomen");
   } catch (error) {
     showStartupError("The server could not be reached.");
@@ -582,6 +773,12 @@ reportEl.addEventListener("input", () => {
   }
 });
 
+for (const button of document.querySelectorAll("[data-study]")) {
+  button.addEventListener("click", () => {
+    if (aiBusy || aiTranscript === "") return;
+    runAi(aiTranscript, button.dataset.study);
+  });
+}
 signoutButton.addEventListener("click", async () => {
   signoutButton.disabled = true;
   try {

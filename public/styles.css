@@ -275,6 +275,55 @@ body {
   font: 16px/1.45 "Segoe UI", Arial, sans-serif;
   resize: vertical;
 }
+.study-question,
+.ai-review,
+.ai-error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.study-question,
+.ai-review {
+  border: 1px solid #d4a72c;
+  background: #fff8c5;
+  color: #5c3d00;
+}
+
+.study-question p {
+  margin: 0 0 10px;
+  font-weight: 650;
+}
+
+.study-question-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.study-question-actions button {
+  padding: 9px 18px;
+  border-color: #9a6700;
+  background: #ffffff;
+  color: #5c3d00;
+}
+
+.ai-review strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ai-review ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.ai-error {
+  border: 1px solid #b00020;
+  background: #fff1f3;
+  color: #8b0018;
+}
 
 .mic-limit {
   margin: 0;

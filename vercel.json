@@ -7,6 +7,10 @@
     "api/transcribe.js": {
       "includeFiles": "library/**",
       "maxDuration": 130
+    },
+    "api/understand.js": {
+      "includeFiles": "library/**",
+      "maxDuration": 15
     }
   }
 }
