@@ -19,6 +19,7 @@ export default async function handler(request, response) {
 
   const started = Date.now();
   let statusCode = 500;
+  let answeredModel = "none";
   const reply = (status, payload, headers = {}) => {
     statusCode = status;
     sendJson(response, status, payload, headers);
@@ -116,6 +117,7 @@ export default async function handler(request, response) {
       return;
     }
 
+    answeredModel = result.model || "none";
     const built = buildChecklist({
       args: result.args,
       context: result.context,
@@ -129,6 +131,8 @@ export default async function handler(request, response) {
     reply(200, { checklist: built.checklist });
   } finally {
     const seconds = ((Date.now() - started) / 1000).toFixed(1);
-    console.log("Understanding duration: " + seconds + "s, status: " + statusCode);
+    console.log(
+      "Understanding duration: " + seconds + "s, status: " + statusCode + ", model: " + answeredModel
+    );
   }
 }
