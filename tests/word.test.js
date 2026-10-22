@@ -100,3 +100,34 @@ test("Word table cell margins are explicit on all studies", async () => {
     }
   }
 });
+
+test("Word header shows age units exactly once", async () => {
+  const library = loadLibrary("abdomen");
+  const cases = [
+    ["27 years", "27 Years/ Male"],
+    ["3 months", "3 months Years/ Male"]
+  ];
+
+  for (const [spokenAge, expected] of cases) {
+    const plan = checklist({
+      header: {
+        name: "TEST PATIENT",
+        age: spokenAge,
+        sex: "M",
+        date: "18/10/2026",
+        patientId: "",
+        referredBy: ""
+      }
+    });
+    const report = assemble(library, plan);
+    const blob = await createReportBlob(reportToWordModel(report));
+    const documentXml = extractZipEntry(Buffer.from(await blob.arrayBuffer()), "word/document.xml");
+    const texts = Array.from(
+      documentXml.matchAll(/<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>/g),
+      (match) => match[1]
+    );
+    const ageIndex = texts.indexOf("Age/Sex:");
+    assert.ok(ageIndex >= 0);
+    assert.equal(texts[ageIndex + 1], expected);
+  }
+});

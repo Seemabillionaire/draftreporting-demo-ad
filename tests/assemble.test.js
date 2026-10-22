@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assemble, reportToText, BLANK } from "../public/src/assemble.js";
+import { assemble, normalizeAge, reportToText, BLANK } from "../public/src/assemble.js";
 import { validateChecklist, validateReport } from "../public/src/validate.js";
 import { loadLibrary, conflictLibrary, checklist, paragraph, segment } from "./helpers.js";
 
@@ -241,4 +241,19 @@ test("rejects a sentence that is not in the library", () => {
 
   const errors = validateReport(library, plan, tampered);
   assert.ok(errors.some((error) => error.includes("does not match the library sentence")));
+});
+
+test("age units are stripped from the stored header", () => {
+  const library = loadLibrary("abdomen");
+  const plan = checklist({ header: { age: "27 years" } });
+  const report = assemble(library, plan);
+
+  assert.equal(report.header.age, "27");
+  assert.equal(normalizeAge("27 Years."), "27");
+  assert.equal(normalizeAge("27 yrs"), "27");
+  assert.equal(normalizeAge("27 yr"), "27");
+  assert.equal(normalizeAge("27 year"), "27");
+  assert.equal(normalizeAge("3 months"), "3 months");
+  assert.equal(normalizeAge("10 days"), "10 days");
+  assert.equal(normalizeAge("27 years 6 months"), "27 years 6 months");
 });

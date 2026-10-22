@@ -1,4 +1,4 @@
-import { assemble, paragraphParts } from "./src/assemble.js";
+import { assemble, normalizeAge, paragraphParts } from "./src/assemble.js";
 import { validateChecklist } from "./src/validate.js";
 import { createReportBlob } from "./src/word.js";
 import { initMicrophone } from "./mic.js";
@@ -257,7 +257,8 @@ function headerTable(header) {
   table.className = "header-table";
   const body = document.createElement("tbody");
   const sexText = header.sex === "F" ? "Female" : "Male";
-  const ageSex = header.age === "" ? sexText : header.age + " Years/ " + sexText;
+  const age = normalizeAge(header.age);
+  const ageSex = age === "" ? sexText : age + " Years/ " + sexText;
 
   const rows = [
     ["Patient\u2019s Name:", header.name, "Age/Sex:", ageSex],
@@ -512,7 +513,7 @@ async function applyAiChecklist(plan) {
     tvsRow.hidden = true;
   }
   nameInput.value = checklist.header.name;
-  ageInput.value = checklist.header.age;
+  ageInput.value = normalizeAge(checklist.header.age);
   patientIdInput.value = "";
   referredByInput.value = "";
   syncFindings();
@@ -723,6 +724,13 @@ sexSelect.addEventListener("change", update);
 for (const input of [nameInput, ageInput, dateInput, patientIdInput, referredByInput]) {
   input.addEventListener("input", update);
 }
+ageInput.addEventListener("blur", () => {
+  const normalized = normalizeAge(ageInput.value);
+  if (normalized !== ageInput.value) {
+    ageInput.value = normalized;
+    update();
+  }
+});
 findingsEl.addEventListener("change", update);
 slotsEl.addEventListener("input", update);
 slotsEl.addEventListener("change", update);

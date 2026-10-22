@@ -221,13 +221,22 @@ export function assemble(library, checklist) {
     study: library.study,
     variant,
     heading: library.headings[variant] !== undefined ? library.headings[variant] : library.headings.default,
-    header: checklist.header === undefined ? null : { ...checklist.header },
+    header:
+      checklist.header === undefined
+        ? null
+        : { ...checklist.header, age: normalizeAge(checklist.header.age) },
     paragraphs,
     impression: buildImpression(library, findings, render, flags),
     adv,
     signature: library.signature.map((line) => render(line)),
     flags
   };
+}
+
+export function normalizeAge(value) {
+  const text =
+    typeof value === "string" ? value.trim() : value === undefined || value === null ? "" : String(value).trim();
+  return text.replace(/\s*(?:years?|yrs?)\.?\s*$/i, "").trim();
 }
 
 export function paragraphParts(paragraph) {
