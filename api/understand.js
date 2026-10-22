@@ -97,7 +97,7 @@ export default async function handler(request, response) {
       }
       if (result.reason === "timeout") {
         reply(504, {
-          error: result.message || "Gemini did not respond within 12 seconds.",
+          error: result.message || "Gemini did not respond within 15 seconds.",
           listMode: true
         });
         return;

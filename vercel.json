@@ -10,7 +10,7 @@
     },
     "api/understand.js": {
       "includeFiles": "library/**",
-      "maxDuration": 15
+      "maxDuration": 20
     }
   }
 }
