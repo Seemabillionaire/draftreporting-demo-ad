@@ -8,6 +8,7 @@ import {
 } from "../lib/auth.js";
 import { buildChecklist, understandDictation } from "../lib/gemini.js";
 
+export const maxDuration = 60;
 const ROOT = path.resolve(import.meta.dirname, "..");
 const STUDIES = new Set(["abdomen", "pelvis", "neck"]);
 
@@ -113,7 +114,10 @@ export default async function handler(request, response) {
         });
         return;
       }
-      reply(502, { error: "AI could not understand the dictation. Use the list below.", listMode: true });
+      reply(502, {
+        error: result.message || "AI could not understand the dictation. Use the list below.",
+        listMode: true
+      });
       return;
     }
 
