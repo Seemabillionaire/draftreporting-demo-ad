@@ -22,6 +22,7 @@ const STATIC = new Map([
   ["/src/assemble.js", ["public/src/assemble.js", "text/javascript; charset=utf-8"]],
   ["/src/validate.js", ["public/src/validate.js", "text/javascript; charset=utf-8"]],
   ["/src/word.js", ["public/src/word.js", "text/javascript; charset=utf-8"]],
+  ["/src/review.js", ["public/src/review.js", "text/javascript; charset=utf-8"]],
   [
     "/vendor/docx-9.8.1/index.mjs",
     ["public/vendor/docx-9.8.1/index.mjs", "text/javascript; charset=utf-8"]

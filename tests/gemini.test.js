@@ -88,3 +88,24 @@ test("closing phrases cannot survive into advice, words or the name", () => {
   assert.ok(!JSON.stringify(result.checklist).toLowerCase().includes("please make"));
   assert.ok(!JSON.stringify(result.checklist).toLowerCase().includes("please draft"));
 });
+
+test("unknown findings and unmatched words stay out of the checklist", () => {
+  const context = {
+    studies: ["abdomen"],
+    findings: [{ id: "f_a_one", study: "abdomen" }]
+  };
+  const result = buildChecklist({
+    args: args({
+      findings: ["f_a_one", "f_missing"],
+      unmatched: ["TEST UNKNOWN FINDING", "please give report"]
+    }),
+    context,
+    studyHint: null
+  });
+
+  assert.deepEqual(result.checklist.findings, [{ id: "f_a_one" }]);
+  assert.deepEqual(result.unmatched, [
+    "TEST UNKNOWN FINDING",
+    "Unknown finding ID: f_missing"
+  ]);
+});

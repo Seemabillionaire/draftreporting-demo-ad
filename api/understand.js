@@ -132,7 +132,7 @@ export default async function handler(request, response) {
       return;
     }
 
-    reply(200, { checklist: built.checklist });
+    reply(200, { checklist: built.checklist, unmatched: built.unmatched });
   } finally {
     const seconds = ((Date.now() - started) / 1000).toFixed(1);
     console.log(

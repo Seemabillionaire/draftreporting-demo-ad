@@ -2,6 +2,7 @@ import { assemble, normalizeAge, paragraphParts } from "./src/assemble.js";
 import { validateChecklist } from "./src/validate.js";
 import { createReportBlob } from "./src/word.js";
 import { initMicrophone } from "./mic.js";
+import { buildReviewItems } from "./src/review.js";
 
 const studySelect = document.getElementById("study");
 const tvsRow = document.getElementById("tvs-row");
@@ -26,7 +27,7 @@ const startupError = document.getElementById("startup-error");
 const signoutButton = document.getElementById("signout");
 const studyQuestion = document.getElementById("study-question");
 const aiReview = document.getElementById("ai-review");
-const aiReviewList = document.getElementById("ai-review-list");
+const aiReviewBody = document.getElementById("ai-review-body");
 const aiError = document.getElementById("ai-error");
 
 let library = null;
@@ -37,6 +38,8 @@ let isFinal = false;
 let loadToken = 0;
 let aiTranscript = "";
 let aiBusy = false;
+let currentUnmatched = [];
+let reviewBlockers = [];
 
 function todayText() {
   const now = new Date();
@@ -366,6 +369,7 @@ function renderReport(report) {
   currentReport = report;
   hasReport = true;
   setFinal(false);
+  renderReview(report);
 }
 
 function snapshotWordModel() {
@@ -436,12 +440,49 @@ function setMicStatus(message) {
   if (element) element.textContent = message;
 }
 
+function renderReview(report) {
+  if (!library) {
+    aiReview.hidden = true;
+    aiReviewBody.replaceChildren();
+    return;
+  }
+  const sections = buildReviewItems({
+    report,
+    library,
+    unmatched: currentUnmatched,
+    blockers: reviewBlockers
+  });
+  if (sections.length === 0) {
+    aiReviewBody.replaceChildren();
+    aiReview.hidden = true;
+    return;
+  }
+
+  const elements = sections.map((section) => {
+    const wrapper = document.createElement("section");
+    const heading = document.createElement("h3");
+    heading.textContent = section.title;
+    const list = document.createElement("ul");
+    for (const text of section.items) {
+      const item = document.createElement("li");
+      item.textContent = text;
+      list.append(item);
+    }
+    wrapper.append(heading, list);
+    return wrapper;
+  });
+  aiReviewBody.replaceChildren(...elements);
+  aiReview.hidden = false;
+}
+
 function clearAiMessages() {
   aiError.textContent = "";
   aiError.hidden = true;
-  aiReviewList.replaceChildren();
+  aiReviewBody.replaceChildren();
   aiReview.hidden = true;
   studyQuestion.hidden = true;
+  currentUnmatched = [];
+  reviewBlockers = [];
 }
 
 function showAiError(message) {
@@ -450,13 +491,8 @@ function showAiError(message) {
 }
 
 function showAiReview(errors) {
-  const items = errors.map((message) => {
-    const item = document.createElement("li");
-    item.textContent = message;
-    return item;
-  });
-  aiReviewList.replaceChildren(...items);
-  aiReview.hidden = false;
+  reviewBlockers = errors;
+  renderReview(currentReport);
 }
 
 async function applyAiChecklist(plan) {
@@ -538,7 +574,6 @@ async function applyAiChecklist(plan) {
 
   hideErrors();
   aiError.hidden = true;
-  aiReview.hidden = true;
   studyQuestion.hidden = true;
   setMicStatus("Report drafted from the dictation. Review the report on the right.");
 }
@@ -600,6 +635,8 @@ async function runAi(transcript, study = null) {
       return;
     }
 
+    currentUnmatched = Array.isArray(data.unmatched) ? data.unmatched : [];
+    reviewBlockers = [];
     await applyAiChecklist(data.checklist);
   } catch (error) {
     showAiError(

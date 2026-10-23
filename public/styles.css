@@ -314,6 +314,15 @@ body {
   margin-bottom: 6px;
 }
 
+.ai-review h3 {
+  margin: 12px 0 4px;
+  font-size: 16px;
+}
+
+.ai-review section:first-child h3 {
+  margin-top: 0;
+}
+
 .ai-review ul {
   margin: 0;
   padding-left: 20px;
