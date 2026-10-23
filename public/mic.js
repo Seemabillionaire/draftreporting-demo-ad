@@ -257,14 +257,24 @@ function resetMeter() {
   meter.setAttribute("aria-valuenow", "0");
 }
 
+const CLOSING_PATTERN = new RegExp(
+  "(?:^|[\\s.,!?;:]+)please[\\s.,!?;:]+(?:" +
+    [
+      "give[\\s.,!?;:]+me[\\s.,!?;:]+the[\\s.,!?;:]+report",
+      "give[\\s.,!?;:]+me[\\s.,!?;:]+report",
+      "give[\\s.,!?;:]+report",
+      "make[\\s.,!?;:]+a[\\s.,!?;:]+report",
+      "make[\\s.,!?;:]+the[\\s.,!?;:]+report",
+      "make[\\s.,!?;:]+report",
+      "draft[\\s.,!?;:]+report"
+    ].join("|") +
+    ")[\\s.,!?;:]*$",
+  "i"
+);
+
 function stripClosingPhrases(text) {
-  return text
-    .replace(
-      /\bplease\s+(?:give\s+report|make\s+(?:a\s+)?report|draft\s+report)\b[\s.,!?]*/gi,
-      " "
-    )
-    .replace(/\s+/g, " ")
-    .trim();
+  if (typeof text !== "string") return "";
+  return text.replace(CLOSING_PATTERN, "").replace(/[ \t]+/g, " ").trim();
 }
 
 async function transcribeRecording(blob) {
