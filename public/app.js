@@ -1,8 +1,8 @@
-import { assemble, normalizeAge, paragraphParts } from "./src/assemble.js";
+import { assemble, normalizeAge, paragraphBlocks } from "./src/assemble.js";
 import { validateChecklist } from "./src/validate.js";
 import { createReportBlob } from "./src/word.js";
 import { initMicrophone } from "./mic.js";
-import { buildReviewItems } from "./src/review.js";
+import { buildReviewItems, buildRuleBlockers } from "./src/review.js";
 
 const studySelect = document.getElementById("study");
 const tvsRow = document.getElementById("tvs-row");
@@ -40,6 +40,14 @@ let aiTranscript = "";
 let aiBusy = false;
 let currentUnmatched = [];
 let reviewBlockers = [];
+let ruleBlockers = [];
+let sideMissing = [];
+let aiAdv = [];
+let spokenImpression = "";
+let impressionUnmatched = [];
+let sideGroupMissing = [];
+let sideConflicts = [];
+let finalBlocked = false;
 
 function todayText() {
   const now = new Date();
@@ -94,16 +102,18 @@ function hideErrors() {
 
 function variantFor() {
   if (!library) return "default";
-  if (library.study === "abdomen") return sexSelect.value === "F" ? "female" : "male";
+  if (library.study === "abdomen") {
+    return sexSelect.value === "F" ? "female" : sexSelect.value === "M" ? "male" : null;
+  }
   if (library.study === "pelvis") return tvsInput.checked ? "tvs" : "default";
   return "default";
 }
 
 function setFinal(value) {
   isFinal = value;
-  finalButton.disabled = value || !hasReport;
-  downloadButton.disabled = !value || !hasReport;
-  copyButton.disabled = !value || !hasReport;
+  finalButton.disabled = value || !hasReport || finalBlocked;
+  downloadButton.disabled = !value || !hasReport || finalBlocked;
+  copyButton.disabled = !value || !hasReport || finalBlocked;
   if (reportBodyEl) reportBodyEl.contentEditable = hasReport ? "true" : "false";
 }
 
@@ -201,6 +211,10 @@ function buildSlots() {
 
 function syncFindings() {
   const variant = variantFor();
+  if (!variant) {
+    for (const input of findingsEl.querySelectorAll('input[name="finding"]')) input.disabled = false;
+    return;
+  }
   const paragraphs = new Map(library.paragraphs.map((paragraph) => [paragraph.id, paragraph]));
   for (const input of findingsEl.querySelectorAll('input[name="finding"]')) {
     const finding = library.findings.find((item) => item.id === input.value);
@@ -251,7 +265,7 @@ function collectChecklist() {
     header: currentHeader(),
     findings,
     slots,
-    adv: []
+    adv: [...aiAdv]
   };
 }
 
@@ -259,7 +273,8 @@ function headerTable(header) {
   const table = document.createElement("table");
   table.className = "header-table";
   const body = document.createElement("tbody");
-  const sexText = header.sex === "F" ? "Female" : "Male";
+  const sexText =
+    header.sex === "F" ? "Female" : header.sex === "M" ? "Male" : "Sex not stated";
   const age = normalizeAge(header.age);
   const ageSex = age === "" ? sexText : age + " Years/ " + sexText;
 
@@ -300,18 +315,19 @@ function renderReport(report) {
   body.append(heading);
 
   for (const paragraph of report.paragraphs) {
-    const line = document.createElement("p");
-    line.className = "report-paragraph";
-    const parts = paragraphParts(paragraph);
-    if (parts.label !== "") {
-      const label = document.createElement("span");
-      label.className = "report-label";
-      label.textContent = parts.label;
-      line.append(label, document.createTextNode(parts.rest));
-    } else {
-      line.textContent = parts.rest;
+    for (const block of paragraphBlocks(paragraph)) {
+      const line = document.createElement("p");
+      line.className = "report-paragraph";
+      if (block.label !== "") {
+        const label = document.createElement("span");
+        label.className = "report-label";
+        label.textContent = block.label;
+        line.append(label, document.createTextNode(block.rest));
+      } else {
+        line.textContent = block.rest;
+      }
+      body.append(line);
     }
-    body.append(line);
   }
 
   const points = report.impression.points;
@@ -450,7 +466,10 @@ function renderReview(report) {
     report,
     library,
     unmatched: currentUnmatched,
-    blockers: reviewBlockers
+    blockers: [...reviewBlockers, ...ruleBlockers],
+    sideConflicts,
+    spokenImpression,
+    impressionUnmatched
   });
   if (sections.length === 0) {
     aiReviewBody.replaceChildren();
@@ -483,6 +502,12 @@ function clearAiMessages() {
   studyQuestion.hidden = true;
   currentUnmatched = [];
   reviewBlockers = [];
+  sideMissing = [];
+  aiAdv = [];
+  spokenImpression = "";
+  impressionUnmatched = [];
+  sideGroupMissing = [];
+  sideConflicts = [];
 }
 
 function showAiError(message) {
@@ -514,70 +539,45 @@ async function applyAiChecklist(plan) {
     return;
   }
 
-  const checklist = {
-    study: plan.study,
-    variant: plan.variant,
-    header: {
-      name: typeof plan.header?.name === "string" ? plan.header.name : "",
-      age: typeof plan.header?.age === "string" ? plan.header.age : "",
-      sex: plan.header?.sex === "F" ? "F" : "M",
-      date: dateInput.value,
-      patientId: "",
-      referredBy: ""
-    },
-    findings: Array.isArray(plan.findings) ? plan.findings : [],
-    slots: plan.slots && typeof plan.slots === "object" ? plan.slots : {},
-    adv: Array.isArray(plan.adv) ? plan.adv : []
-  };
-
-  const errors = validateChecklist(library, checklist);
-  if (errors.length > 0) {
-    showAiReview(errors);
-    setMicStatus("Some dictation items were not used. Use the list below.");
-    return;
-  }
-
-  sexSelect.value = checklist.header.sex;
+  const sex = plan.study === "pelvis" ? "F" : plan.header?.sex === "F" ? "F" : plan.header?.sex === "M" ? "M" : "";
+  sexSelect.value = sex;
   if (plan.study === "pelvis") {
-    sexSelect.value = "F";
     sexSelect.disabled = true;
-    tvsInput.checked = checklist.variant === "tvs";
+    tvsInput.checked = plan.variant === "tvs";
     tvsRow.hidden = false;
   } else {
     sexSelect.disabled = false;
     tvsInput.checked = false;
     tvsRow.hidden = true;
   }
-  nameInput.value = checklist.header.name;
-  ageInput.value = normalizeAge(checklist.header.age);
-  patientIdInput.value = "";
-  referredByInput.value = "";
+
+  ageInput.value = normalizeAge(plan.header?.age === undefined ? "" : String(plan.header.age));
   syncFindings();
 
-  const wantedFindings = new Set(checklist.findings.map((finding) => finding.id));
+  const wantedFindings = new Set(
+    Array.isArray(plan.findings) ? plan.findings.map((finding) => finding.id) : []
+  );
   for (const input of findingsEl.querySelectorAll('input[name="finding"]')) {
     input.checked = wantedFindings.has(input.value);
   }
 
+  const slots = plan.slots && typeof plan.slots === "object" ? plan.slots : {};
   for (const control of slotsEl.querySelectorAll("[data-slot-id]")) {
-    const value = checklist.slots[control.dataset.slotId];
+    const value = slots[control.dataset.slotId];
     control.value = value === undefined || value === null ? "" : String(value);
   }
 
-  try {
-    renderReport(assemble(library, checklist));
-  } catch (error) {
-    showAiError("The report could not be built. Use the list below.");
-    setMicStatus("The report could not be built.");
-    return;
-  }
-
-  hideErrors();
+  aiAdv = Array.isArray(plan.adv) ? plan.adv : [];
+  reviewBlockers = [];
+  update();
   aiError.hidden = true;
   studyQuestion.hidden = true;
-  setMicStatus("Report drafted from the dictation. Review the report on the right.");
+  if (finalBlocked) {
+    setMicStatus("Choose the missing details in the yellow box.");
+  } else {
+    setMicStatus("Report drafted from the dictation. Review the report on the right.");
+  }
 }
-
 async function runAi(transcript, study = null) {
   if (aiBusy) return;
   aiBusy = true;
@@ -586,7 +586,7 @@ async function runAi(transcript, study = null) {
   setMicStatus("Understanding the dictation...");
 
   try {
-    const body = { transcript };
+    const body = { transcript, screenStudy: studySelect.value };
     if (study !== null) body.study = study;
     const response = await fetch("/api/understand", {
       method: "POST",
@@ -636,6 +636,11 @@ async function runAi(transcript, study = null) {
     }
 
     currentUnmatched = Array.isArray(data.unmatched) ? data.unmatched : [];
+    sideMissing = Array.isArray(data.sideMissing) ? data.sideMissing : [];
+    sideGroupMissing = Array.isArray(data.sideGroupMissing) ? data.sideGroupMissing : [];
+    sideConflicts = Array.isArray(data.sideConflicts) ? data.sideConflicts : [];
+    spokenImpression = typeof data.spokenImpression === "string" ? data.spokenImpression : "";
+    impressionUnmatched = Array.isArray(data.impressionUnmatched) ? data.impressionUnmatched : [];
     reviewBlockers = [];
     await applyAiChecklist(data.checklist);
   } catch (error) {
@@ -653,10 +658,55 @@ async function handleTranscript(transcript) {
   await runAi(transcript);
 }
 
+function computeRuleBlockers(sideFindingChosen) {
+  if (!library) return [];
+  return buildRuleBlockers({
+    study: library.study,
+    sex: sexSelect.value,
+    sideMissing,
+    sideGroupMissing,
+    sideFindingChosen
+  });
+}
+
 function update() {
   if (!library) return;
+  const checkedSide = Array.from(
+    findingsEl.querySelectorAll('input[name="finding"]:checked')
+  ).some((input) => {
+    const finding = library.findings.find((item) => item.id === input.value);
+    return finding && finding.side === true;
+  });
+  if (checkedSide) sideMissing = [];
+  const checkedGroups = new Set();
+  const groupSelections = new Map();
+  for (const input of findingsEl.querySelectorAll('input[name="finding"]:checked')) {
+    const finding = library.findings.find((item) => item.id === input.value);
+    if (finding && typeof finding.sideGroup === "string" && finding.sideGroup !== "") {
+      checkedGroups.add(finding.sideGroup);
+      if (!groupSelections.has(finding.sideGroup)) groupSelections.set(finding.sideGroup, []);
+      groupSelections.get(finding.sideGroup).push(finding.id);
+    }
+  }
+  if (checkedGroups.size > 0) {
+    sideGroupMissing = sideGroupMissing.filter((group) => !checkedGroups.has(group));
+  }
+  sideConflicts = Array.from(groupSelections.entries())
+    .filter((entry) => entry[1].length > 1)
+    .map((entry) => ({ group: entry[0], findings: entry[1] }));
+  ruleBlockers = computeRuleBlockers(checkedSide);
+  finalBlocked = ruleBlockers.length > 0;
   setFinal(false);
   syncFindings();
+
+  if (library.study === "abdomen" && !["M", "F"].includes(sexSelect.value)) {
+    hideErrors();
+    clearReport();
+    renderReview(null);
+    setStatus("Choose sex to build the report.");
+    return;
+  }
+
   const plan = collectChecklist();
   const errors = validateChecklist(library, plan);
   if (errors.length > 0) {
@@ -750,7 +800,11 @@ async function start() {
 }
 
 studySelect.addEventListener("change", () => {
+  const previousStudy = library ? library.study : null;
   library = null;
+  if (previousStudy === "pelvis" && studySelect.value !== "pelvis") {
+    sexSelect.value = "";
+  }
   findingsEl.replaceChildren();
   slotsEl.replaceChildren();
   clearReport();

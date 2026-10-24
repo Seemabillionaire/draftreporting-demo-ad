@@ -83,6 +83,36 @@
       "advLine": null,
       "status": "for_confirmation",
       "source": "TEST PELVIS SOURCE THREE"
+    },
+    {
+      "id": "pf_right",
+      "name": "TEST PELVIS RIGHT FINDING",
+      "spoken": ["TEST PELVIS RIGHT FINDING", "TEST RIGHT FINDING"],
+      "paragraph": "p_pelvis_a",
+      "side": false,
+      "replaces": ["pa1"],
+      "insertAfter": null,
+      "text": "TEST pelvis right finding replaces A1.",
+      "impression": "TEST pelvis right impression.",
+      "advLine": null,
+      "status": "confirmed",
+      "source": "TEST PELVIS SOURCE RIGHT",
+      "sideGroup": "TEST PELVIS SIDE GROUP"
+    },
+    {
+      "id": "pf_left",
+      "name": "TEST PELVIS LEFT FINDING",
+      "spoken": ["TEST PELVIS LEFT FINDING", "TEST LEFT FINDING"],
+      "paragraph": "p_pelvis_a",
+      "side": false,
+      "replaces": ["pa2"],
+      "insertAfter": null,
+      "text": "TEST pelvis left finding replaces A2.",
+      "impression": "TEST pelvis left impression.",
+      "advLine": null,
+      "status": "confirmed",
+      "source": "TEST PELVIS SOURCE LEFT",
+      "sideGroup": "TEST PELVIS SIDE GROUP"
     }
   ],
   "combinedImpressions": [],

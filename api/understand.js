@@ -72,6 +72,15 @@ export default async function handler(request, response) {
       studyHint = body.study;
     }
 
+    let screenStudy = null;
+    if (body.screenStudy !== undefined) {
+      if (typeof body.screenStudy !== "string" || !STUDIES.has(body.screenStudy)) {
+        reply(400, { error: "Unknown screen study.", listMode: true });
+        return;
+      }
+      screenStudy = body.screenStudy;
+    }
+
     const result = await understandDictation({
       transcript,
       apiKey,
@@ -125,14 +134,23 @@ export default async function handler(request, response) {
     const built = buildChecklist({
       args: result.args,
       context: result.context,
-      studyHint
+      studyHint,
+      screenStudy
     });
     if (built.needsStudy) {
       reply(200, { needsStudy: true });
       return;
     }
 
-    reply(200, { checklist: built.checklist, unmatched: built.unmatched });
+    reply(200, {
+      checklist: built.checklist,
+      unmatched: built.unmatched,
+      sideMissing: built.sideMissing,
+      sideGroupMissing: built.sideGroupMissing,
+      sideConflicts: built.sideConflicts,
+      spokenImpression: result.spokenImpression || "",
+      impressionUnmatched: result.impressionUnmatched || []
+    });
   } finally {
     const seconds = ((Date.now() - started) / 1000).toFixed(1);
     console.log(

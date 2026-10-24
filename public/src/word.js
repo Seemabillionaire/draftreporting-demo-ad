@@ -13,7 +13,7 @@ import {
   UnderlineType,
   WidthType
 } from "../vendor/docx-9.8.1/index.mjs";
-import { normalizeAge, paragraphParts } from "./assemble.js";
+import { normalizeAge, paragraphBlocks } from "./assemble.js";
 
 const FONT = "Times New Roman";
 const BODY_SIZE = 24;
@@ -82,7 +82,8 @@ function headerTable(header) {
     insideHorizontal: border,
     insideVertical: border
   };
-  const sexText = header.sex === "F" ? "Female" : "Male";
+  const sexText =
+    header.sex === "F" ? "Female" : header.sex === "M" ? "Male" : "Sex not stated";
   const age = normalizeAge(header.age);
   const ageSex = age === "" ? "Years/ " + sexText : age + " Years/ " + sexText;
 
@@ -172,7 +173,7 @@ export function reportToWordModel(report) {
     study: report.study,
     heading: report.heading,
     header: { ...header, age: normalizeAge(header.age) },
-    paragraphs: report.paragraphs.map(paragraphParts),
+    paragraphs: report.paragraphs.flatMap((paragraph) => paragraphBlocks(paragraph)),
     impression: {
       label: report.impression.label,
       points: report.impression.points.map((point) => ({

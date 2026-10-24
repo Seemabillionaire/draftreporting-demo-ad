@@ -140,12 +140,22 @@ export function validateChecklist(library, checklist) {
   return errors;
 }
 
+export function normalizeSlotValues(library, slots = {}) {
+  const result = { ...slots };
+  for (const slot of library.slots) {
+    if (slot.type === "word" && typeof result[slot.id] === "string") {
+      result[slot.id] = result[slot.id].replace(/\s+by\s+/gi, " x ");
+    }
+  }
+  return result;
+}
+
 export function validateReport(library, checklist, report) {
   const errors = [];
   if (!isPlainObject(report)) return ["report: expected an object"];
   if (!isPlainObject(checklist)) return ["checklist: expected an object"];
 
-  const slots = isPlainObject(checklist.slots) ? checklist.slots : {};
+  const slots = normalizeSlotValues(library, isPlainObject(checklist.slots) ? checklist.slots : {});
   const variant = checklist.variant;
   const selected = new Set(
     Array.isArray(checklist.findings) ? checklist.findings.map((entry) => entry.id) : []

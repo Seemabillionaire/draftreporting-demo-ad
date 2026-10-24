@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assemble, normalizeAge, reportToText, BLANK } from "../public/src/assemble.js";
+import { assemble, normalizeAge, paragraphBlocks, reportToText, BLANK } from "../public/src/assemble.js";
 import { validateChecklist, validateReport } from "../public/src/validate.js";
 import { loadLibrary, conflictLibrary, checklist, paragraph, segment } from "./helpers.js";
 
@@ -256,4 +256,33 @@ test("age units are stripped from the stored header", () => {
   assert.equal(normalizeAge("3 months"), "3 months");
   assert.equal(normalizeAge("10 days"), "10 days");
   assert.equal(normalizeAge("27 years 6 months"), "27 years 6 months");
+});
+test("word slots print dimensions with x", () => {
+  const library = loadLibrary("abdomen");
+  for (const value of ["5 by 3", "1.8 by 1.8 by 4.3"]) {
+    const plan = checklist({
+      findings: [{ id: "f_no_impression" }],
+      slots: { f_word: value }
+    });
+    const report = assemble(library, plan);
+    const text = segment(report, "p_organ_b", "f_no_impression").text;
+    assert.ok(text.includes(value.replace(/\s+by\s+/gi, " x ")));
+    assertValid(library, plan, report);
+  }
+
+  const errors = validateChecklist(library, checklist({ slots: { a_len: "5 by 3" } }));
+  assert.ok(errors.some((error) => error.includes("expected a non-negative number")));
+});
+
+test("a finding bullet after a blank line becomes a new block", () => {
+  const library = loadLibrary("abdomen");
+  const finding = library.findings.find((item) => item.id === "f_a_one");
+  finding.text = finding.text + "\n\n- TEST extra bullet line.";
+  const report = assemble(library, checklist({ findings: [{ id: "f_a_one" }] }));
+  const blocks = paragraphBlocks(report.paragraphs.find((item) => item.id === "p_organ_a"));
+
+  assert.equal(blocks.length, 2);
+  assert.equal(blocks[1].label, "");
+  assert.equal(blocks[1].rest, "- TEST extra bullet line.");
+  assert.ok(reportToText(report).includes("- TEST extra bullet line."));
 });

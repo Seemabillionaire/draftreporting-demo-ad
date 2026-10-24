@@ -1,0 +1,423 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "library/schema.real.json",
+  "title": "Real report drafting library file (IMPLEMENTATION-PLAN.md, Appendix C)",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "study",
+    "headings",
+    "variants",
+    "impressionLabel",
+    "normalImpression",
+    "signature",
+    "paragraphs",
+    "slots",
+    "findings",
+    "combinedImpressions",
+    "advLines"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "study": {
+      "enum": [
+        "abdomen",
+        "pelvis",
+        "neck"
+      ]
+    },
+    "headings": {
+      "type": "object",
+      "minProperties": 1,
+      "required": [
+        "default"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/realText"
+      }
+    },
+    "variants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/variant"
+      }
+    },
+    "impressionLabel": {
+      "$ref": "#/$defs/realText"
+    },
+    "normalImpression": {
+      "$ref": "#/$defs/realText"
+    },
+    "signature": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/realText"
+      }
+    },
+    "paragraphs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/paragraph"
+      }
+    },
+    "slots": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/slot"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "combinedImpressions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/combinedImpression"
+      }
+    },
+    "advLines": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/realText"
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "variant": {
+      "type": "object",
+      "required": [
+        "id",
+        "when"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "when": {
+          "$ref": "#/$defs/when"
+        }
+      }
+    },
+    "when": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sex": {
+          "enum": [
+            "M",
+            "F"
+          ]
+        },
+        "tvs": {
+          "type": "boolean"
+        }
+      }
+    },
+    "segment": {
+      "type": "object",
+      "required": [
+        "id",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "text": {
+          "$ref": "#/$defs/realText"
+        }
+      }
+    },
+    "sidePart": {
+      "type": "object",
+      "required": [
+        "label",
+        "separator",
+        "segments"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/optionalRealLabel"
+        },
+        "separator": {
+          "$ref": "#/$defs/realSeparator"
+        },
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/segment"
+          }
+        }
+      }
+    },
+    "sideSplit": {
+      "type": "object",
+      "required": [
+        "right",
+        "left"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "right": {
+          "$ref": "#/$defs/sidePart"
+        },
+        "left": {
+          "$ref": "#/$defs/sidePart"
+        }
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "separator",
+        "variants",
+        "segments"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/optionalRealLabel"
+        },
+        "separator": {
+          "$ref": "#/$defs/realSeparator"
+        },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/segment"
+          }
+        },
+        "sideSplit": {
+          "$ref": "#/$defs/sideSplit"
+        }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "enum": [
+            "number",
+            "choice",
+            "word"
+          ]
+        },
+        "unit": {
+          "$ref": "#/$defs/realText"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/realText"
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "type",
+            "unit"
+          ],
+          "properties": {
+            "type": {
+              "const": "number"
+            }
+          }
+        },
+        {
+          "required": [
+            "type",
+            "options"
+          ],
+          "properties": {
+            "type": {
+              "const": "choice"
+            }
+          }
+        },
+        {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "word"
+            }
+          }
+        }
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "spoken",
+        "paragraph",
+        "side",
+        "replaces",
+        "insertAfter",
+        "text",
+        "impression",
+        "advLine",
+        "status",
+        "source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "name": {
+          "$ref": "#/$defs/realText"
+        },
+        "spoken": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/realText"
+          }
+        },
+        "paragraph": {
+          "$ref": "#/$defs/identifier"
+        },
+        "side": {
+          "type": "boolean"
+        },
+        "replaces": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "insertAfter": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "$ref": "#/$defs/realText"
+        },
+        "impression": {
+          "$ref": "#/$defs/optionalRealText"
+        },
+        "advLine": {
+          "$ref": "#/$defs/optionalRealText"
+        },
+        "status": {
+          "enum": [
+            "confirmed",
+            "for_confirmation"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/realText"
+        },
+        "sideGroup": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "combinedImpression": {
+      "type": "object",
+      "required": [
+        "findings",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "findings": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "text": {
+          "$ref": "#/$defs/realText"
+        }
+      }
+    },
+    "realText": {
+      "type": "string",
+      "pattern": "^(?!TEST)[\\s\\S]+$"
+    },
+    "realSeparator": {
+      "type": "string",
+      "pattern": "^(?!TEST)[\\s\\S]*$"
+    },
+    "optionalRealText": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/realText"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "optionalRealLabel": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/realText"
+        },
+        {
+          "const": ""
+        }
+      ]
+    }
+  }
+}

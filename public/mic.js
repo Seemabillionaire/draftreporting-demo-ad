@@ -257,20 +257,7 @@ function resetMeter() {
   meter.setAttribute("aria-valuenow", "0");
 }
 
-const CLOSING_PATTERN = new RegExp(
-  "(?:^|[\\s.,!?;:]+)please[\\s.,!?;:]+(?:" +
-    [
-      "give[\\s.,!?;:]+me[\\s.,!?;:]+the[\\s.,!?;:]+report",
-      "give[\\s.,!?;:]+me[\\s.,!?;:]+report",
-      "give[\\s.,!?;:]+report",
-      "make[\\s.,!?;:]+a[\\s.,!?;:]+report",
-      "make[\\s.,!?;:]+the[\\s.,!?;:]+report",
-      "make[\\s.,!?;:]+report",
-      "draft[\\s.,!?;:]+report"
-    ].join("|") +
-    ")[\\s.,!?;:]*$",
-  "i"
-);
+const CLOSING_PATTERN = /(?:^|[\s.,!?;:]+)(?:please[\s.,!?;:]+)?(?:give|make|draft)[\s.,!?;:]+(?:me[\s.,!?;:]+)?(?:(?:a|the)[\s.,!?;:]+)?report[\s.,!?;:]*$/i;
 
 function stripClosingPhrases(text) {
   if (typeof text !== "string") return "";

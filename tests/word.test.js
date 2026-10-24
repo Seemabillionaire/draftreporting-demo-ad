@@ -131,3 +131,29 @@ test("Word header shows age units exactly once", async () => {
     assert.equal(texts[ageIndex + 1], expected);
   }
 });
+test("Word turns a finding bullet into a separate paragraph", async () => {
+  const library = loadLibrary("abdomen");
+  const finding = library.findings.find((item) => item.id === "f_a_one");
+  finding.text = finding.text + "\n\n- TEST extra bullet line.";
+  const report = assemble(
+    library,
+    checklist({
+      header: {
+        name: "TEST PATIENT",
+        age: "40",
+        sex: "M",
+        date: "18/10/2026",
+        patientId: "",
+        referredBy: ""
+      },
+      findings: [{ id: "f_a_one" }]
+    })
+  );
+  const blob = await createReportBlob(reportToWordModel(report));
+  const documentXml = extractZipEntry(Buffer.from(await blob.arrayBuffer()), "word/document.xml");
+  const paragraphs = Array.from(documentXml.matchAll(/<w:p(?:\s[^>]*)?>([\s\S]*?)<\/w:p>/g), (match) => {
+    return Array.from(match[1].matchAll(/<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>/g), (text) => text[1]).join("");
+  });
+
+  assert.ok(paragraphs.includes("- TEST extra bullet line."));
+});

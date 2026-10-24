@@ -1,4 +1,10 @@
-import { BLANK, slotIdsIn, renderTemplate, validateChecklist } from "./validate.js";
+import {
+  BLANK,
+  normalizeSlotValues,
+  renderTemplate,
+  slotIdsIn,
+  validateChecklist
+} from "./validate.js";
 
 export { BLANK, renderTemplate };
 
@@ -138,6 +144,7 @@ export function assemble(library, checklist) {
   }
 
   const slots = checklist.slots === undefined ? {} : checklist.slots;
+  const renderSlots = normalizeSlotValues(library, slots);
   const flags = {
     conflicts: [],
     unmatchedAdv: [],
@@ -151,7 +158,7 @@ export function assemble(library, checklist) {
       const value = slots[id];
       if (value === undefined || value === null || value === "") pushUnique(flags.unfilledSlots, id);
     }
-    return renderTemplate(text, slots);
+    return renderTemplate(text, renderSlots);
   };
 
   const findings = checklist.findings.map((entry) =>
@@ -251,12 +258,23 @@ export function paragraphLine(paragraph) {
   return parts.label + parts.rest;
 }
 
+export function paragraphBlocks(paragraph) {
+  const parts = paragraphParts(paragraph);
+  const chunks = parts.rest.split(/\r?\n\s*\r?\n(?=- )/);
+  return [
+    { label: parts.label, rest: chunks[0] },
+    ...chunks.slice(1).map((rest) => ({ label: "", rest }))
+  ];
+}
+
 export function reportToText(report) {
   const lines = [report.heading, ""];
 
   for (const paragraph of report.paragraphs) {
-    lines.push(paragraphLine(paragraph));
-    lines.push("");
+    for (const block of paragraphBlocks(paragraph)) {
+      lines.push(block.label === "" ? block.rest : block.label + block.rest);
+      lines.push("");
+    }
   }
 
   const points = report.impression.points;

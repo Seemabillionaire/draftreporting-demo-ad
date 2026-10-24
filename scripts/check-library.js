@@ -1,9 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const LIBRARY_DIR = path.join(ROOT, "library");
 const SCHEMA_PATH = path.join(LIBRARY_DIR, "schema.json");
+const REAL_SCHEMA_PATH = path.join(LIBRARY_DIR, "schema.real.json");
 const FILES = ["abdomen.json", "pelvis.json", "neck.json"];
 const REQUIRED_VARIANTS = {
   abdomen: ["male", "female"],
@@ -41,7 +43,7 @@ function resolveRef(root, ref) {
     .reduce((node, part) => node[part.replace(/~1/g, "/").replace(/~0/g, "~")], root);
 }
 
-function validateNode(schema, value, at, root, errors) {
+export function validateNode(schema, value, at, root, errors) {
   if (schema === true) return;
   if (schema === false) {
     errors.push(at + ": value is not allowed");
@@ -166,14 +168,11 @@ function collectSlotRefs(text, at, refs, errors) {
   }
 }
 
-function collectTextValues(library, errors) {
+export function collectTextEntries(library) {
   const values = [];
   const push = (at, value) => {
     if (typeof value !== "string") return;
     values.push({ at, value });
-    if (value !== "" && !value.startsWith("TEST")) {
-      errors.push(at + ": placeholder text must start with TEST (got " + JSON.stringify(value) + ")");
-    }
   };
 
   for (const [key, value] of Object.entries(library.headings)) push("headings." + key, value);
@@ -215,6 +214,21 @@ function collectTextValues(library, errors) {
   return values;
 }
 
+export function schemaModeFor(entries) {
+  return entries.some((entry) => entry.value.startsWith("TEST")) ? "placeholder" : "real";
+}
+
+export function textRuleErrors(entries, mode, errors) {
+  for (const entry of entries) {
+    if (entry.value === "") continue;
+    if (mode === "placeholder" && !entry.value.startsWith("TEST")) {
+      errors.push(entry.at + ": placeholder text must start with TEST");
+    }
+    if (mode === "real" && entry.value.startsWith("TEST")) {
+      errors.push(entry.at + ": real text must not start with TEST");
+    }
+  }
+}
 function checkReferences(library, errors, warnings) {
   const variantIds = library.variants.map((variant) => variant.id);
   const expected = REQUIRED_VARIANTS[library.study];
@@ -361,7 +375,16 @@ function normalReportLines(library, variantId) {
   return lines;
 }
 
-function loadLibraries(schema) {
+export function validateLibraryData(library, schemas, at = "file") {
+  const entries = collectTextEntries(library);
+  const mode = schemaModeFor(entries);
+  const errors = [];
+  validateNode(schemas[mode], library, at, schemas[mode], errors);
+  if (errors.length === 0) textRuleErrors(entries, mode, errors);
+  return { mode, errors };
+}
+
+export function loadLibraries(schemas) {
   const results = [];
   for (const file of FILES) {
     const filePath = path.join(LIBRARY_DIR, file);
@@ -371,9 +394,19 @@ function loadLibraries(schema) {
     try {
       library = JSON.parse(fs.readFileSync(filePath, "utf8"));
     } catch (error) {
-      results.push({ file, library: null, errors: ["cannot read or parse JSON: " + error.message], warnings });
+      results.push({
+        file,
+        library: null,
+        errors: ["cannot read or parse JSON: " + error.message],
+        warnings,
+        mode: "unknown"
+      });
       continue;
     }
+
+    const entries = collectTextEntries(library);
+    const mode = schemaModeFor(entries);
+    const schema = schemas[mode];
     validateNode(schema, library, file, schema, errors);
     if (errors.length === 0) {
       const expectedStudy = path.basename(file, ".json");
@@ -381,13 +414,12 @@ function loadLibraries(schema) {
         errors.push(file + '.study: expected "' + expectedStudy + '", got ' + JSON.stringify(library.study));
       }
       checkReferences(library, errors, warnings);
-      collectTextValues(library, errors);
+      textRuleErrors(entries, mode, errors);
     }
-    results.push({ file, library, errors, warnings });
+    results.push({ file, library, errors, warnings, mode });
   }
   return results;
 }
-
 function printNormalReports(results) {
   let count = 0;
   for (const result of results) {
@@ -427,25 +459,28 @@ function printFindings(results) {
 }
 
 function main() {
-  let schema;
+  let schemas;
   try {
-    schema = JSON.parse(fs.readFileSync(SCHEMA_PATH, "utf8"));
+    schemas = {
+      placeholder: JSON.parse(fs.readFileSync(SCHEMA_PATH, "utf8")),
+      real: JSON.parse(fs.readFileSync(REAL_SCHEMA_PATH, "utf8"))
+    };
   } catch (error) {
-    console.error("FAIL: cannot read schema.json: " + error.message);
+    console.error("FAIL: cannot read schema.json or schema.real.json: " + error.message);
     process.exitCode = 1;
     return;
   }
 
   console.log("Library check");
-  console.log("Schema: library/schema.json");
+  console.log("Schemas: library/schema.json (placeholder) and library/schema.real.json (real)");
   console.log("");
 
-  const results = loadLibraries(schema);
+  const results = loadLibraries(schemas);
   let failed = false;
 
   for (const result of results) {
     if (result.errors.length === 0) {
-      console.log(result.file + ": PASS (schema and references)");
+      console.log(result.file + ": PASS (schema and references, " + result.mode + " text)");
     } else {
       failed = true;
       console.log(result.file + ": FAIL");
@@ -463,14 +498,17 @@ function main() {
 
   const normalCount = printNormalReports(results);
   const findingCount = printFindings(results);
+  const placeholderCount = results.filter((result) => result.mode === "placeholder").length;
+  const realCount = results.filter((result) => result.mode === "real").length;
 
   console.log("");
   console.log("---");
   console.log("Files validated: " + results.length + " (abdomen, pelvis, neck)");
   console.log("Normal reports printed: " + normalCount);
   console.log("Findings printed: " + findingCount);
-  console.log("Placeholder check: every text value starts with TEST.");
+  console.log("Text rule: " + placeholderCount + " placeholder file(s), " + realCount + " real file(s).");
+  if (placeholderCount > 0) console.log("Placeholder check: placeholder files use TEST text only.");
   console.log("Check: PASS");
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
